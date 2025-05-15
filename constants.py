@@ -1,0 +1,1 @@
+model_path='../dataset/thoughtviz_eeg_data'
