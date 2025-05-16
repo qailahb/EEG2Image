@@ -56,7 +56,7 @@ if __name__ == '__main__':
 	input_res  = 64
 	data_path  = f'{model_path}/*/*'
 
-    # WHAT WE ADDING - START
+    # WHAT WE ADDED - START
 
 	clstoidx = {}
 	idxtocls = {}
@@ -86,10 +86,14 @@ if __name__ == '__main__':
 	for X, Y in zip(test_X, test_Y):
 		test_path.append(np.random.choice(imgdict[idxtocls[np.argmax(Y)]], size=(1,) ,replace=True)[0])
 
-	# END
+	# WHAT WE ADDED - END
 
 	# train_batch = load_complete_data(data_path, input_res=input_res, batch_size=batch_size)
-	train_batch = load_complete_data(train_X, train_Y, test_path, batch_size=batch_size)
+
+	# Originally uncommented
+	# train_batch = load_complete_data(train_X, train_Y, test_path, batch_size=batch_size) 
+
+	train_batch = load_complete_data(test_X, test_Y, test_path, batch_size=batch_size)
 	X, latent_Y = next(iter(train_batch))
 	# print(latent_Y)
 	latent_Y = latent_Y[:16]
