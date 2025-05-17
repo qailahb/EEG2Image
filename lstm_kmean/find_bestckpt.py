@@ -19,7 +19,7 @@ from constants import model_path
 style.use('seaborn')
 
 os.environ["CUDA_DEVICE_ORDER"]= "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"]= '3'
+os.environ["CUDA_VISIBLE_DEVICES"]= '0'
 
 
 # Thanks to: https://github.com/k-han/DTC/blob/master/utils/util.py

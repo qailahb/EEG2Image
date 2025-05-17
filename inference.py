@@ -61,12 +61,12 @@ if __name__ == '__main__':
 	clstoidx = {}
 	idxtocls = {}
 
-	for idx, item in enumerate(natsorted(glob(f'{model_path}/images/test/*')), start=0):
+	for idx, item in enumerate(natsorted(glob(f'{model_path}/images/train/*')), start=0):
 		clsname = os.path.basename(item)
 		clstoidx[clsname] = idx
 		idxtocls[idx] = clsname
 
-	image_paths = natsorted(glob(f'{model_path}/images/test/*/*'))
+	image_paths = natsorted(glob(f'{model_path}/images/train/*/*'))
 	imgdict     = {}
 	for path in image_paths:
 		key = path.split(os.path.sep)[-2]
@@ -79,22 +79,22 @@ if __name__ == '__main__':
 		data = pickle.load(file, encoding='latin1')
 		train_X = data['x_train']
 		train_Y = data['y_train']
-		test_X = data['x_test']
-		test_Y = data['y_test']
+		# test_X = data['x_test']
+		# test_Y = data['y_test']
 
-	test_path = []
-	for X, Y in zip(test_X, test_Y):
-		test_path.append(np.random.choice(imgdict[idxtocls[np.argmax(Y)]], size=(1,) ,replace=True)[0])
+	data_path = []
+	for X, Y in zip(train_X, train_Y):
+		data_path.append(np.random.choice(imgdict[idxtocls[np.argmax(Y)]], size=(1,) ,replace=True)[0])
 
 	# WHAT WE ADDED - END
 
-	# train_batch = load_complete_data(data_path, input_res=input_res, batch_size=batch_size)
+	# Original
+	train_batch = load_complete_data(train_X, train_Y, data_path, batch_size=batch_size, dataset_type="infer")
 
-	# Originally uncommented
+	# Added
 	# train_batch = load_complete_data(train_X, train_Y, test_path, batch_size=batch_size) 
-
-	train_batch = load_complete_data(test_X, test_Y, test_path, batch_size=batch_size)
-	X, latent_Y = next(iter(train_batch))
+	# train_batch = load_complete_data(test_X, test_Y, test_path, batch_size=batch_size)
+	X, latent_Y, I = next(iter(train_batch))
 	# print(latent_Y)
 	latent_Y = latent_Y[:16]
 	lr = 3e-4

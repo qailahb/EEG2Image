@@ -71,8 +71,13 @@ if __name__ == '__main__':
 	# print(X.shape, Y.shape)
 	triplenet = TripleNet(n_classes=n_classes)
 	opt     = tf.keras.optimizers.Adam(learning_rate=3e-4)
+	# triplenet_ckpt    = tf.train.Checkpoint(step=tf.Variable(1), model=triplenet, optimizer=opt)
+	# triplenet_ckpt.restore('experiments/best_ckpt/ckpt-89')
+
 	triplenet_ckpt    = tf.train.Checkpoint(step=tf.Variable(1), model=triplenet, optimizer=opt)
-	triplenet_ckpt.restore('experiments/best_ckpt/ckpt-89')
+	triplenet_ckptman = tf.train.CheckpointManager(triplenet_ckpt, directory='lstm_kmean/experiments/best_ckpt', max_to_keep=5000)
+	triplenet_ckpt.restore(triplenet_ckptman.latest_checkpoint)
+
 
 	tq = tqdm(test_batch)
 	feat_X  = np.array([])
