@@ -1,16 +1,13 @@
+# Creates grid-based composites of generated image outputs
+
 import cv2
 import numpy as np
 import os
 import tensorflow as tf
 
+# Creates a grid of images into a single composite figure
 def save_figure(X, save_path, categ=None):
-	
 	X = X.numpy()
-
-	# if not os.path.isdir(save_path):
-	# 	os.makedirs(os.path.join(save_path, 'train'))
-	# 	os.makedirs(os.path.join(save_path, 'val'))
-	# 	os.makedirs(os.path.join(save_path, 'test'))
 
 	N      = X.shape[0]
 	img_h  = X.shape[1]
@@ -23,7 +20,6 @@ def save_figure(X, save_path, categ=None):
 
 	for img in X:
 		img = np.uint8(np.clip(255*(img * 0.5 + 0.5), 0.0, 255.0))
-		# img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 		canvas[h:h+img_h, w:w+img_w, :] = img
 		w += img_w
 		if w>=(C*img_w):
@@ -34,14 +30,9 @@ def save_figure(X, save_path, categ=None):
 	canvas = cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB)
 	return canvas
 
+# Creates a grid of images with class lables into a single composite figure
 def save_figure_condition(X, save_path, CN, lookup_dict, rev_lookup_dict, categ=None):
-	
 	X = X.numpy()
-
-	# if not os.path.isdir(save_path):
-	# 	os.makedirs(os.path.join(save_path, 'train'))
-	# 	os.makedirs(os.path.join(save_path, 'val'))
-	# 	os.makedirs(os.path.join(save_path, 'test'))
 
 	N      = X.shape[0]
 	img_h  = X.shape[1]
@@ -59,7 +50,6 @@ def save_figure_condition(X, save_path, CN, lookup_dict, rev_lookup_dict, categ=
 		img  = np.uint8(np.clip(255*(img * 0.5 + 0.5), 0.0, 255.0))
 		img  = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 		cimg[text_w:, :, :] = img
-		# cv2.putText(image, text, loc(x,y), font_type, font_scale, loc, thickness)
 		cimg = cv2.putText(cimg, c, (img_w//2-20, 10), 1, 0.7, (0, 0, 0), 1)
 		canvas[h:h+img_h+text_w, w:w+img_w, :] = cimg
 		w += img_w
@@ -71,6 +61,3 @@ def save_figure_condition(X, save_path, CN, lookup_dict, rev_lookup_dict, categ=
 	canvas = cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB)
 	return canvas
 
-# import tensorflow as tf
-# X = tf.convert_to_tensor((np.random.randint(0, 255, (7, 256, 256, 3)) - 127.5) / 127.5)
-# save_results(X, 'result', 'train', 1)

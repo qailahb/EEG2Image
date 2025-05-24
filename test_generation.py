@@ -1,7 +1,7 @@
+# DCGAN Inference (test phase)
+# A image generation-focussed version of train.py, using the pretrained DCGAN
+
 import tensorflow as tf
-# from utils import vis, load_batch#, load_data
-from utils import load_complete_data, show_batch_images
-from model import DCGAN, dist_train_step#, train_step
 from tqdm import tqdm
 import os
 import shutil
@@ -11,11 +11,15 @@ from natsort import natsorted
 import wandb
 import numpy as np
 import cv2
-from lstm_kmean.model import TripleNet
 import math
 from constants import model_path
 
-# from eval_utils import get_inception_score
+# Custom functions
+from utils import load_complete_data, show_batch_images
+from model import DCGAN, dist_train_step
+from lstm_kmean.model import TripleNet
+from constants import model_path
+
 tf.random.set_seed(45)
 np.random.seed(45)
 
@@ -36,8 +40,6 @@ for path in image_paths:
 	else:
 		imgdict[key] = [path]
 
-# wandb.init(project='DCGAN_DiffAug_EDDisc_imagenet_128', entity="prajwal_15")
-
 os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'
 os.environ["CUDA_DEVICE_ORDER"]= "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]= '0'
@@ -49,10 +51,6 @@ if __name__ == '__main__':
 	batch_size  = 128
 	test_batch_size  = 1
 	n_classes   = 10
-
-	# data_cls = natsorted(glob('f'{model_path}/*'))
-	# cls2idx  = {key.split(os.path.sep)[-1]:idx for idx, key in enumerate(data_cls, start=0)}
-	# idx2cls  = {value:key for key, value in cls2idx.items()}
 
 	with open(f'{model_path}/eeg/image/data.pkl', 'rb') as file:
 		data = pickle.load(file, encoding='latin1')
@@ -69,22 +67,15 @@ if __name__ == '__main__':
 
 	test_batch  = load_complete_data(test_X, test_Y, test_path, batch_size=test_batch_size)
 	X, Y, I      = next(iter(test_batch))
-	# latent_label = Y[:16]
 	print(X.shape, Y.shape, I.shape)
 
 	gpus = tf.config.list_physical_devices('GPU')
 	mirrored_strategy = tf.distribute.MirroredStrategy(devices=['/GPU:0'], 
 		cross_device_ops=tf.distribute.HierarchicalCopyAllReduce())
 	n_gpus = mirrored_strategy.num_replicas_in_sync
-	# print(n_gpus)
 
-	# batch_size = 64
 	latent_dim = 128
 	input_res  = 128
-
-	# print(latent_Y)
-	# latent_Y = latent_Y[:16]
-	# print
 
 	triplenet = TripleNet(n_classes=n_classes)
 	opt     = tf.keras.optimizers.Adam(learning_rate=3e-4)
@@ -95,17 +86,13 @@ if __name__ == '__main__':
 	_, latent_Y = triplenet(X, training=False)
 
 	print('Extracting test eeg features:')
-	# test_eeg_features = np.array([np.squeeze(triplenet(E, training=False)[1].numpy()) for E, Y, X in tqdm(test_batch)])
-	# test_eeg_y        = np.array([Y.numpy()[0] for E, Y, X in tqdm(test_batch)])
-	test_image_count = 50000 #// n_classes
-	# test_labels = np.tile(np.expand_dims(np.arange(0, 10), axis=-1), [1, test_image_count//n_classes])
-	# test_labels = np.sort(test_labels.ravel())
+	
+	test_image_count = 50000
 	
 	test_eeg_cls      = {}
 	for E, Y, X in tqdm(test_batch):
 		Y = Y.numpy()[0]
 		if Y not in test_eeg_cls:
-			# print(E.shape)
 			test_eeg_cls[Y] = [np.squeeze(triplenet(E, training=False)[1].numpy())]
 		else:
 			test_eeg_cls[Y].append(np.squeeze(triplenet(E, training=False)[1].numpy()))
@@ -120,10 +107,7 @@ if __name__ == '__main__':
 		test_eeg_cls[cl] = np.expand_dims(test_eeg_cls[cl], axis=1)
 		test_eeg_cls[cl] = np.tile(test_eeg_cls[cl], [1, per_cls_image, 1])
 		test_eeg_cls[cl] = np.reshape(test_eeg_cls[cl], [-1, latent_dim])
-		# print(test_eeg_cls[cl].shape)
-
-	# test_image_count = test_image_count // n_classes
-	# print(test_eeg_features.shape, test_eeg_y.shape)
+		
 
 	lr = 3e-4
 	with mirrored_strategy.scope():
@@ -134,14 +118,7 @@ if __name__ == '__main__':
 		ckpt_manager = tf.train.CheckpointManager(ckpt, directory='experiments/best_ckpt', max_to_keep=300)
 		ckpt.restore(ckpt_manager.latest_checkpoint).expect_partial()
 
-	# print(ckpt.step.numpy())
-	START         = int(ckpt.step.numpy())# // len(train_batch) + 1
-	# EPOCHS        = 300#670#66
-	# model_freq    = 355#178#355#178#200#40
-	# t_visfreq     = 355#178#355#178#200#1500#40
-	# latent        = tf.random.uniform(shape=(16, latent_dim), minval=-0.2, maxval=0.2)
-	# latent        = tf.concat([latent, latent_Y[:16]], axis=-1)
-	# print(latent_Y.shape, latent.shape)
+	START         = int(ckpt.step.numpy())
 	
 	if ckpt_manager.latest_checkpoint:
 		print('Restored from last checkpoint epoch: {0}'.format(START))
@@ -162,33 +139,4 @@ if __name__ == '__main__':
 			X = np.uint8(np.clip((X*0.5 + 0.5)*255.0, 0, 255))
 			cv2.imwrite(save_path+'/{}_{}.jpg'.format(cl, idx), X)
 
-		# @tf.function
-		# def generate_images():
-		# 	outputs = []
-		# 	for noise in tqdm(noise_lst):
-		# 		X = mirrored_strategy.run(model.gen, args=(tf.expand_dims(noise, axis=0),))
-		# 		X = tf.squeeze(X)
-		# 		X = tf.clip_by_value((X * 0.5 + 0.5) * 255.0, 0.0, 255.0)
-		# 		X = tf.cast(X, tf.uint8)
-		# 		outputs.append(X)
-		# 	return outputs
-
-		# # Outside graph: save images using numpy and OpenCV
-		# generated_images = generate_images()
-
-		# for idx, img_tensor in enumerate(generated_images):
-		# 	img_np = img_tensor.numpy()
-		# 	img_bgr = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
-		# 	cv2.imwrite(f"{save_path}/{cl}_{idx}.jpg", img_bgr)
-
-
-	# # eeg_feature_vectors_test = np.array([test_eeg_features[np.random.choice(np.where(test_eeg_y == test_label)[0], size=(1,))[0]] for test_label in test_labels])
-	# # latent_var  = np.concatenate([test_noise, eeg_feature_vectors_test], axis=-1)
-	# # print(test_noise.shape, eeg_feature_vectors_test.shape, latent_var.shape)
-	# # for idx, noise in enumerate(tqdm(latent_var)):
-	# # 	X = mirrored_strategy.run(model.gen, args=(tf.expand_dims(noise, axis=0),))
-	# # 	X = cv2.cvtColor(tf.squeeze(X).numpy(), cv2.COLOR_RGB2BGR)
-	# # 	X = np.uint8(np.clip((X*0.5 + 0.5)*255.0, 0, 255))
-	# # 	cv2.imwrite(save_path+'/{}_{}.jpg'.format(test_labels[idx], idx), X)
-	# # print(X.shape)
-	# # break
+		
