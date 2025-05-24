@@ -12,13 +12,13 @@ import wandb
 import numpy as np
 import cv2
 import math
-from constants import model_path
+from config.constants import model_path
 
 # Custom functions
-from utils import load_complete_data, show_batch_images
-from model import DCGAN, dist_train_step
+from core.utils import load_complete_data, show_batch_images
+from core.model import DCGAN, dist_train_step
 from lstm_kmean.model import TripleNet
-from constants import model_path
+from config.constants import model_path
 
 tf.random.set_seed(45)
 np.random.seed(45)

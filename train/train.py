@@ -13,10 +13,10 @@ import cv2
 import math
 
 # Custom functions and model path
-from utils import load_complete_data, show_batch_images
-from model import DCGAN, dist_train_step
+from core.utils import load_complete_data, show_batch_images
+from core.model import DCGAN, dist_train_step
 from lstm_kmean.model import TripleNet
-from constants import model_path
+from config.constants import model_path
 
 # Sets the seed for Tensorflow and Numpy's random number generator to ensure consistent behaviour
 tf.random.set_seed(45)
@@ -55,7 +55,7 @@ if __name__ == '__main__':
 	# Training constants
 	n_channels  = 14
 	n_feat      = 128
-	batch_size  = 128
+	batch_size  = 64
 	test_batch_size  = 1
 	n_classes   = 10
 

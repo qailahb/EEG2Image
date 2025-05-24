@@ -6,8 +6,8 @@ from tensorflow.keras.constraints import Constraint
 from tensorflow_addons.layers import SpectralNormalization
 
 # Custom loss and data augmentation functions
-from losses import disc_hinge, disc_loss, gen_loss, gen_hinge
-from diff_augment import diff_augment
+from core.losses import disc_hinge, disc_loss, gen_loss, gen_hinge
+from core.diff_augment import diff_augment
 
 # Sets random seed for repruducibility
 tf.random.set_seed(45)

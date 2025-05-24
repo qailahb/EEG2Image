@@ -13,9 +13,9 @@ import pandas as pd
 from sklearn.cluster import KMeans
 
 # Custom functions
-from model import TripleNet, train_step, test_step
-from utils import load_complete_data
-from constants import model_path
+from core.model import TripleNet, train_step, test_step
+from core.utils import load_complete_data
+from config.constants import model_path
 
 style.use('seaborn')
 

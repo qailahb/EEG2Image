@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 from matplotlib import style
 
 # Custom function to save figures
-from save_figure import save_figure, save_figure_condition
+from evaluation.save_figure import save_figure, save_figure_condition
 
 style.use('seaborn')
 

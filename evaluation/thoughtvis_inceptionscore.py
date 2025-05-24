@@ -22,7 +22,7 @@ import tensorflow as tf
 import os
 
 # Custom function to compute score
-from eval_utils import get_inception_score
+from evaluation.eval_utils import get_inception_score
 
 # Sets up GPU for TensorFlow use
 os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'

@@ -8,7 +8,7 @@ import tensorflow as tf
 from functools import partial
 
 # Custom model path
-from constants import model_path
+from config.constants import model_path
 
 # Generates class name to index mappings ----------------------------------------------------------- 
 
